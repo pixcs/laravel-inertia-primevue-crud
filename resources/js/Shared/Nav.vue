@@ -17,10 +17,5 @@
                 Settings
             </NavLink>
         </li>
-        <!-- <li>
-            <NavLink href="/logout" class="hover:underline" method="POST" :data="{ name: 'patrick' }" as="button">
-                Logout
-            </NavLink>
-        </li> -->
     </ul>
 </template>
