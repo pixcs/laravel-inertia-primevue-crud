@@ -6,7 +6,8 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\MoviesController;
-
+use App\Http\Controllers\MoviesManagementController;
+use App\Http\Controllers\RoleController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -20,9 +21,15 @@ Route::get('/', function () {
 Route::get('/dashboard', [HomeController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::get('/movies', [MoviesController::class, 'index'])->middleware(['auth', 'verified'])->name('movies.index');
-Route::post('/movies/store', [MoviesController::class, 'store'])->middleware(['auth', 'verified'])->name('movies.store');
-Route::post('/movies/update', [MoviesController::class, 'update'])->middleware(['auth', 'verified'])->name('movies.update');
-Route::delete('/movies/destroy', [MoviesController::class, 'destroy'])->middleware(['auth', 'verified'])->name('movies.destroy');
+
+Route::get('/movies-management', [MoviesManagementController::class, 'index'])->middleware(['auth', 'verified'])->name('movies-management.index');
+
+Route::post('/movies-management/{id}', [MoviesManagementController::class, 'find'])->middleware(['auth', 'verified'])->name('movies-management.find');
+Route::post('/movies-management/store', [MoviesManagementController::class, 'store'])->middleware(['auth', 'verified'])->name('movies-management.store');
+Route::post('/movies-management/update', [MoviesManagementController::class, 'update'])->middleware(['auth', 'verified'])->name('movies-management.update');
+Route::delete('/movies-management/destroy', [MoviesManagementController::class, 'destroy'])->middleware(['auth', 'verified'])->name('movies-management.destroy');
+
+Route::post('/movies-management/role/store', [RoleController::class, 'store'])->middleware(['auth', 'verified'])->name('role.store');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

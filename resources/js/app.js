@@ -9,8 +9,6 @@ import Aura from '@primevue/themes/aura';
 import 'primeicons/primeicons.css'
 import ToastService from 'primevue/toastservice';
 import ConfirmationService from 'primevue/confirmationservice';
-import NProgress from 'nprogress'
-import { router } from '@inertiajs/vue3'
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
