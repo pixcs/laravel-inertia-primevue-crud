@@ -9,6 +9,11 @@ import { Link } from '@inertiajs/vue3';
 
 const showingNavigationDropdown = ref(false);
 
+defineProps({
+    permissions: Object,
+    role: String
+})
+
 </script>
 
 <template>
@@ -36,9 +41,15 @@ const showingNavigationDropdown = ref(false);
                                 <NavLink :href="route('movies.index')" :active="route().current('movies.index')">
                                     Movies
                                 </NavLink>
-                                <NavLink :href="route('movies-management.index')" :active="route().current('movies-management.index')">
+                                <NavLink 
+                                    :href="route('movies-management.index')" 
+                                    :active="route().current('movies-management.index')"
+                                     v-if="role === 'super admin' || role === 'admin' "
+                                   
+                                >
                                     Movies Management
                                 </NavLink>
+                                <!-- <p class="text-gray-500">{{ role }}</p> -->
                             </div>
                         </div>
 

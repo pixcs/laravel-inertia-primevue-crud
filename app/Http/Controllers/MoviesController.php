@@ -13,27 +13,32 @@ use App\Models\User;
 class MoviesController extends Controller
 {
     public function index() 
-{
-    $user = Auth::user(); 
+    {
+        $user = Auth::user(); 
+        $rolePermissions = null;
 
-    $movies = Movie::all();
-    $rolePermissions = null;
+        if ($user) {
+        
+            $role = $user->getRoleNames()->first(); // Get the first role
+            $permissions = $user->getAllPermissions();
 
-    if ($user) {
     
-        $role = $user->getRoleNames()->first(); // Get the first role
-        $permissions = $user->getAllPermissions();
+            $rolePermissions = [
+                'role' => $role,
+                'permissions' => $permissions->toArray()
+            ];
 
-   
-        $rolePermissions = [
-            'role' => $role,
-            'permissions' => $permissions
-        ];
+            //dd($rolePermissions);
+        }
 
-        //dd($user, $role, $permissions);
+        return Inertia::render('Movies/Movie', compact('rolePermissions'));
     }
 
-    return Inertia::render('Movies/Movie', compact('movies', 'rolePermissions'));
-}
+    public function get()
+    {
+        $movies = Movie::all();
+
+        return response()->json($movies);
+    }
 
 }

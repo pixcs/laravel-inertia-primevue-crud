@@ -23,25 +23,20 @@ import ColumnGroup from 'primevue/columngroup';
 import Row from 'primevue/row';
 import Drawer from 'primevue/drawer';
 import axios from 'axios';
+import { onMounted } from 'vue';
 
 
 defineProps({
   movies: Array,
   permissions: Array,
   rolesWithPermissions: Array,
-  roles: Object
+  roles: Object,
+  currentUserPermissions: Array
 })
 
 const toast = useToast();
 const confirm = useConfirm();
 const showUpdateBtn = ref(false);
-
-const products = ref([
-  { code: 'admin', name: 'Full Access' },
-  { code: 'editor', name: 'Edit Content' },
-  { code: 'viewer', name: 'View Only' },
-  // Add more hardcoded roles as needed
-]);
 
 const genreOptions = [
   { name: 'Action' },
@@ -52,6 +47,26 @@ const genreOptions = [
   { name: 'Sci-fi' },
   { name: 'Horror' }
 ];
+
+const movies = ref([]);
+const failedFetchMovies = ref('');
+
+onMounted(() => {
+
+  const getMovies = async () => {
+    try {
+      const res = await axios.get(route('movies-management.get'));
+      console.log("movie management response:", res.data);
+      movies.value = res.data;
+    } catch (err) {
+      console.error('movie management error', err.message);
+      failedFetchMovies.value = err.message;
+    }
+  }
+
+  getMovies();
+})
+
 
 const form = useForm({
   id: null,
@@ -202,8 +217,10 @@ const showTemplateEdit = (event, movie) => {
 
 const roleVisible = ref(false);
 const visible = ref(false);
+const hasPermission = ref(false);
 
 const showRoleModal = () => {
+  console.log('Create-role result:', hasPermission.value);
   roleVisible.value = !roleVisible.value
 }
 
@@ -246,7 +263,7 @@ const showSelectedPermission = async (userId) => {
   visibleRight.value = true;
 
   try {
-    const res = await axios.post(route('movies-management.find', userId));
+    const res = await axios.post(route('role.find', userId));
     const roles = res.data.roles;
     console.log(roles);
 
@@ -262,13 +279,36 @@ const showSelectedPermission = async (userId) => {
   }
 }
 
+const updatePermissions = () => {
+  console.log('updated successfully');
+  console.log(selectEditForm.selectedPermissions);
+
+  selectEditForm.put(route('role.update'), {
+    onSuccess: (res) => {
+      console.log("permissions update response:", res);
+      showSuccess('Updated Successfully');
+      visibleRight.value = false;
+    },
+    onError: (err) => {
+      console.error(err);
+      showError(selectEditForm.errors.selectedPermissions);
+    }
+  })
+}
+
+const hideDrawer = () => {
+  console.log(permissions); 
+  selectEditForm.errors.selectedPermissions = null;
+  visibleRight.value = false;     //drawer
+}
+
 
 </script>
 
 <template>
 
-  <Head title="CRUD Movies" />
-  <AuthenticatedLayout>
+  <Head title="Movies Management" />
+  <AuthenticatedLayout :permissions="currentUserPermissions" :role="currentUserPermissions.role">
     <template #header>
       <h2 class="font-semibold text-xl text-gray-800 leading-tight">
         Movies Management
@@ -299,7 +339,13 @@ const showSelectedPermission = async (userId) => {
           roleForm.errors.selectedPermissions }}</p>
 
         <div class="flex justify-end gap-4 my-4">
-          <Button type="button" label="Cancel" severity="secondary" @click="showRoleModal"></Button>
+          <Button 
+            type="button" 
+            label="Cancel" 
+            severity="secondary" 
+            @click="showRoleModal"
+          >
+          </Button>
           <Button type="submit" label="Submit"></Button>
         </div>
       </form>
@@ -325,20 +371,26 @@ const showSelectedPermission = async (userId) => {
             <form @submit.prevent="showSelectedPermission(slotProps.data.id)">
               <Button icon="pi pi-file-edit" type="submit" aria-label="Save" label="Edit" />
             </form>
-            <Drawer v-model:visible="visibleRight" :header="selectEditForm.role" position="right">
+
+            <Drawer v-model:visible="visibleRight" class="text-md" :header="`${selectEditForm.role} privilege`"
+              position="right">
               <p>Created At: {{ selectEditForm.createdAt }}</p>
-              <form @submit.prevent="">
+              <form @submit.prevent="updatePermissions">
                 <div class="flex items-center gap-2 my-5" v-for="permission of permissions" :key="permission.id">
                   <Checkbox v-model="selectEditForm.selectedPermissions" :inputId="permission.name" name="permissions"
                     :value="permission.name" />
                   <label :for="permission.name" class="ml-2">{{ permission.name }}</label>
                 </div>
+
+                <p class="text-xs text-red-500 mb-4" v-if="selectEditForm.errors.selectedPermissions">{{
+                  selectEditForm.errors.selectedPermissions }}</p>
                 <div class="flex justify-end gap-2">
-                  <Button type="button" label="Cancel" severity="secondary" @click="visibleRight.value = false"></Button>
-                  <Button type="submit" label="Update" @click=""></Button>
+                  <Button type="button" label="Cancel" severity="secondary" @click="hideDrawer"></Button>
+                  <Button type="submit" label="Update"></Button>
                 </div>
               </form>
             </Drawer>
+
           </template>
         </Column>
       </DataTable>
@@ -421,6 +473,7 @@ const showSelectedPermission = async (userId) => {
           </div>
         </template>
       </Card>
+      <p class="text-red-500 text-3xl font-bold" v-if="failedFetchMovies">{{ failedFetchMovies }} (Forbidden)</p>
 
     </div>
   </AuthenticatedLayout>

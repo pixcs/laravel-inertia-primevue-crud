@@ -14,27 +14,36 @@ class MoviesManagementController extends Controller
 {
     public function index() 
     {
-        $movies = Movie::all();
         $permissions = Permission::all();
-       
-        // Retrieve roles for the authenticated user and eager load their permissions
-        //$users = User::with(['roles.permissions'])->get();
-
         $rolesWithPermissions = Role::with('permissions')->get()->toArray();
+
+        $user = Auth::user(); 
+        $currentUserPermissions = null;
+    
+        if ($user) {
+            // Get the first role (if any)
+            $role = $user->getRoleNames()->first(); 
+    
+            // Get all permissions
+            $userPermissions = $user->getAllPermissions()->pluck('name'); // Get permission names as an array
+    
+            $currentUserPermissions = [
+                'role' => $role,
+                'permissions' => $userPermissions->toArray()
+            ];
+        }
         
-        return Inertia::render('Movies/Management', compact('movies', 'permissions', 'rolesWithPermissions'));
+        return Inertia::render('Movies/Management', compact('permissions', 'rolesWithPermissions', 'currentUserPermissions'));
     }
 
-    public function find($id)
-    { 
-        $role = Role::with('permissions')->findOrFail($id);
-    
-        $permissions = $role->permissions;
-    
-        return response()->json([
-            'roles' => $role,
-        ]);
+
+    public function get()
+    {
+        $movies = Movie::all();
+
+        return response()->json($movies);
     }
+
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -68,6 +77,7 @@ class MoviesManagementController extends Controller
 
     public function update(Request $request)
     {
+        dd($request);
         $validated = $request->validate([
             'title' => 'required|string|max:50',
             'description' => 'required|string|max:250',

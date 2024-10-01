@@ -22,9 +22,11 @@ class RoleSeeder extends Seeder
         Permission::create(['name' => 'create-movies']);
         Permission::create(['name' => 'update-movies']);
         Permission::create(['name' => 'delete-movies']);
-
-        //For user Permission
-        Permission::create(['name' => 'save-movies']);
+        
+        Permission::create(['name' => 'create-role']);
+        Permission::create(['name' => 'read-role']);
+        Permission::create(['name' => 'delete-role']);
+        Permission::create(['name' => 'update-permission']);
         
         // Assign permissions to roles
         $role = Role::findByName('super admin');
@@ -36,5 +38,6 @@ class RoleSeeder extends Seeder
 
         $roleThree = Role::findByName('user');
         $roleThree->givePermissionTo(['read-movies', 'save-movies']);
+
     }
 }

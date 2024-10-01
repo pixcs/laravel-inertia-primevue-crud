@@ -21,6 +21,30 @@ class RoleController extends Controller
         $role = Role::findByName($validated['role']);
         $role->givePermissionTo($validated['selectedPermissions']);
 
-       return redirect()->back()->with('success', 'Successfully Created');
+       return redirect()->back()->with('success', 'Created Successfully');
+    }
+
+    public function find($id)
+    { 
+        $role = Role::with('permissions')->findOrFail($id);
+    
+        $permissions = $role->permissions;
+    
+        return response()->json([
+            'roles' => $role,
+        ]);
+    }
+
+    public function update(Request $request)
+    {
+        $validated = $request->validate([
+            'role' => 'required|string',
+            'selectedPermissions' => 'required|array'
+        ]);
+
+        $role = Role::findByName($validated['role']);
+        $role->syncPermissions($validated['selectedPermissions']);
+
+       return redirect()->back()->with('success', 'Updated Successfully');
     }
 }
