@@ -38,5 +38,4 @@ const handleClick = (value) => {
     <Button v-for="numAndSymbol of numbersAndSymbols" :key="numAndSymbol" v-text="numAndSymbol"
       @click="handleClick(numAndSymbol)" />
   </div>
-
 </template>
